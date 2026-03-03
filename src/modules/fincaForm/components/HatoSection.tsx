@@ -332,7 +332,7 @@ export function HatoSection({ form, forceValidation = false }: HatoFormProps) {
           {/* Raza predominante (Opcional) */}
           <div>
             <label className="block text-sm font-medium text-[#4A4A4A] mb-1">
-              Raza predominante <span className="text-xs text-gray-500 font-normal">(Opcional)</span>
+              Raza predominante
             </label>
 
             <Input

@@ -36,11 +36,11 @@ export function TermsAndSubmit({
     }
   }, [])
 
-  const err =
+  // 👇 dejamos el error igual, pero lo mostramos dentro del Field para que re-renderice bien
+  const getErr = () =>
     (form as any).state?.errors?.acceptTerms ||
-    (form as any).state?.meta?.errors?.acceptTerms?.[0]?.message
-
-  const accepted = !!(form as any).state?.values?.acceptTerms
+    (form as any).state?.meta?.errors?.acceptTerms?.[0]?.message ||
+    ""
 
   return (
     <div className="bg-white border border-[#DCD6C9] rounded-xl shadow-md">
@@ -66,7 +66,7 @@ export function TermsAndSubmit({
           </div>
         </div>
 
-        {/* Checkbox */}
+        {/* Checkbox + botones dependen del Field para asegurar re-render */}
         <div className="space-y-2 text-[#4A4A4A]">
           <form.Field
             name="acceptTerms"
@@ -75,47 +75,62 @@ export function TermsAndSubmit({
                 if (!value) return "Debes aceptar los términos y condiciones para continuar"
                 return undefined
               },
+              onBlur: ({ value }: any) => {
+                if (!value) return "Debes aceptar los términos y condiciones para continuar"
+                return undefined
+              },
+              onSubmit: ({ value }: any) => {
+                if (!value) return "Debes aceptar los términos y condiciones para continuar"
+                return undefined
+              },
             }}
           >
-            {(f: FieldLike<boolean>) => (
-              <label className="flex items-start gap-3 rounded-xl bg-white px-4 py-3">
-                <Checkbox
-                  checked={!!f.state.value}
-                  onCheckedChange={(v) => f.handleChange(Boolean(v))}
-                  onBlur={f.handleBlur}
-                  className="mt-0.5 border-[#DCD6C9] data-[state=checked]:bg-[#708C3E] data-[state=checked]:border-[#708C3E]"
-                />
-                <span className="text-sm leading-relaxed">
-                  Confirmo mi consentimiento para que mis datos personales sean utilizados para el
-                  registro de mi solicitud de asociado.
-                </span>
-              </label>
-            )}
+            {(f: FieldLike<boolean>) => {
+              const accepted = !!f.state.value
+              const err = getErr() || (Array.isArray((f as any)?.state?.meta?.errors) ? String((f as any).state.meta.errors?.[0] ?? "") : "")
+
+              return (
+                <>
+                  <label className="flex items-start gap-3 rounded-xl bg-white px-4 py-3">
+                    <Checkbox
+                      checked={accepted}
+                      onCheckedChange={(v) => f.handleChange(Boolean(v))}
+                      onBlur={f.handleBlur}
+                      className="mt-0.5 border-[#DCD6C9] data-[state=checked]:bg-[#708C3E] data-[state=checked]:border-[#708C3E]"
+                    />
+                    <span className="text-sm leading-relaxed">
+                      Confirmo mi consentimiento para que mis datos personales sean utilizados para el
+                      registro de mi solicitud de asociado.
+                    </span>
+                  </label>
+
+                  {err ? <p className="text-sm text-red-600">{err}</p> : null}
+
+                  {/* Botones */}
+                  <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between sm:items-center pt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={prevStep}
+                      className={`${btn.outlineGray} h-10 px-4 text-sm`}
+                    >
+                      <ArrowLeft className="size-4" />
+                      Volver
+                    </Button>
+
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting || !accepted}
+                      className={`${btn.primary} ${btn.disabledSoft} h-10 px-4 text-sm`}
+                    >
+                      <Send className="size-4" />
+                      {isSubmitting ? "Enviando..." : "Enviar solicitud"}
+                    </Button>
+                  </div>
+                </>
+              )
+            }}
           </form.Field>
-
-          {err && <p className="text-sm text-red-600">{err}</p>}
-        </div>
-
-        {/* Botones */}
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between sm:items-center pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={prevStep}
-            className={`${btn.outlineGray} h-10 px-4 text-sm`}
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Button>
-
-          <Button
-            type="submit"
-            disabled={isSubmitting || !accepted}
-            className={`${btn.primary} ${btn.disabledSoft} h-10 px-4 text-sm`}
-          >
-            <Send className="size-4" />
-            {isSubmitting ? "Enviando..." : "Enviar solicitud"}
-          </Button>
         </div>
       </div>
     </div>

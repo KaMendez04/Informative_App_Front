@@ -43,6 +43,7 @@ export async function createSolicitud(payload: any) {
 
   try {
     const cleanData = sanitizePayload(payload, ["caserio"]);
+    
     const data = await apiConfig.post("/solicitudes", cleanData, {
       headers: { "Content-Type": "application/json" },
     });
@@ -99,19 +100,18 @@ export async function uploadDocuments(
 }
 
 
-export async function existsCedula(cedula: string): Promise<boolean> {
+export async function existsCedula(cedula: string): Promise<boolean | null> {
   const v = (cedula ?? "").trim();
   if (!v) return false;
 
   try {
-    await apiConfig.get(`/associates/cedula/${encodeURIComponent(v)}`);
-    return true;
-  } catch (err: any) {
-    const status = err?.response?.status;
-
-    if (status === 404) return false; // disponible
-    return false; // no bloquear por error de red
-  }
+  const { data } = await apiConfig.get(`/associates/cedula/${encodeURIComponent(v)}`)
+  return data
+} catch (err: any) {
+  const status = err?.response?.status
+  if (status === 404 || status === 401 || status === 403) return null
+  throw err
+}
 }
 
 
@@ -134,16 +134,16 @@ export async function existsEmail(email: string): Promise<boolean> {
 }
 
 export async function lookupPersonaByCedulaForForms(cedula: string) {
-  const v = (cedula ?? "").trim();
-  if (!v) return null;
+  const v = (cedula ?? "").trim()
+  if (!v) return null
 
   try {
-    const { data } = await apiConfig.get(`/personas/cedula/${encodeURIComponent(v)}`);
-    return data; // PersonaFormLookupDto
+    const { data } = await apiConfig.get(`/personas/cedula/${encodeURIComponent(v)}`)
+    return data
   } catch (err: any) {
-    const status = err?.response?.status;
-    if (status === 404) return null;
-    throw err;
+    const status = err?.response?.status
+    if (status === 404 || status === 401 || status === 403) return null
+    throw err
   }
 }
 
