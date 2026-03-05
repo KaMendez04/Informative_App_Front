@@ -118,7 +118,6 @@ export default function EventsPage() {
 const total = rtEvents.length
 const hasEvents = total > 0
 
-const [showSwipeHint] = useState(true)
 
   useEffect(() => {
     if (!seeded.current && events.length > 0) {
